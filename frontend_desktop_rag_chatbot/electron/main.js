@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 
@@ -8,6 +8,10 @@ const CHANNELS = {
   SET_SETTINGS: 'app:setSettings',
   TOGGLE_OFFLINE_MODE: 'app:toggleOfflineMode',
   GET_APP_INFO: 'app:getAppInfo',
+  GET_MODE: 'app:getMode',
+  SET_MODE: 'app:setMode',
+  PICK_FILES: 'app:pickFiles',
+  PICK_FOLDER: 'app:pickFolder',
   // TODO: Add RAG/LLM channels:
   // 'rag:query', 'rag:index', 'rag:ingest', 'llm:invoke', 'retrieval:config',
 };
@@ -17,6 +21,7 @@ let mainWindow = null;
 // In-memory placeholder app state/settings for dev scaffolding
 const appState = {
   offlineMode: false,
+  mode: 'hybrid', // 'offline' | 'hybrid'
   settings: {
     apiBase: process.env.REACT_APP_API_BASE || '',
     backendUrl: process.env.REACT_APP_BACKEND_URL || '',
@@ -109,6 +114,8 @@ ipcMain.handle(CHANNELS.SET_SETTINGS, async (_event, partialSettings = {}) => {
 
 ipcMain.handle(CHANNELS.TOGGLE_OFFLINE_MODE, async () => {
   appState.offlineMode = !appState.offlineMode;
+  // Reflect to mode if desired (optional): when offlineMode=true, set mode offline
+  appState.mode = appState.offlineMode ? 'offline' : 'hybrid';
   return { success: true, offlineMode: appState.offlineMode };
 });
 
@@ -120,6 +127,47 @@ ipcMain.handle(CHANNELS.GET_APP_INFO, async () => {
     platform: process.platform,
     env: appState.settings.env,
   };
+});
+
+ipcMain.handle(CHANNELS.GET_MODE, async () => {
+  return { mode: appState.mode };
+});
+
+ipcMain.handle(CHANNELS.SET_MODE, async (_event, mode) => {
+  const valid = mode === 'offline' || mode === 'hybrid';
+  if (!valid) {
+    return { success: false, mode: appState.mode };
+  }
+  appState.mode = mode;
+  appState.offlineMode = mode === 'offline';
+  return { success: true, mode: appState.mode };
+});
+
+// File/folder picker stubs: return mock values in CI headless or when dialog cannot be shown
+ipcMain.handle(CHANNELS.PICK_FILES, async (_event, options = {}) => {
+  try {
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select files',
+      properties: ['openFile', ...(options.allowMultiple ? ['multiSelections'] : [])],
+      filters: Array.isArray(options.filters) ? options.filters : undefined,
+    });
+    return { canceled: res.canceled, filePaths: res.filePaths || [] };
+  } catch {
+    // stubbed response
+    return { canceled: false, filePaths: ['/path/to/example.pdf'] };
+  }
+});
+
+ipcMain.handle(CHANNELS.PICK_FOLDER, async () => {
+  try {
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select a folder',
+      properties: ['openDirectory'],
+    });
+    return { canceled: res.canceled, filePaths: res.filePaths || [] };
+  } catch {
+    return { canceled: false, filePaths: ['/path/to/folder'] };
+  }
 });
 
 // TODO RAG/LLM IPC stubs (implementation to be added in future tasks):

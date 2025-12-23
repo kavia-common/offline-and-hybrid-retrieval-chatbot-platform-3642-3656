@@ -1,6 +1,7 @@
-//
+/*
 // Settings service: provides a simple API to persist and retrieve user configuration.
 // Data is stored in localStorage for persistence and optionally bridged to Electron via window.api.
+*/
 //
 const STORAGE_KEY = 'rag_desktop_settings_v1';
 
@@ -27,6 +28,7 @@ const DEFAULT_SETTINGS = {
   featureFlags: '',
   env: '',
   offlineMode: false,
+  mode: 'hybrid', // 'offline' | 'hybrid'
 };
 
 // Normalize numeric fields and provide clamps
@@ -53,23 +55,37 @@ export function loadSettings() {
     let settings = raw ? JSON.parse(raw) : getDefaultSettings();
 
     // best-effort merge from electron's minimal settings once
-    if (typeof window !== 'undefined' && window.api?.getSettings && !settings.__mergedElectron) {
-      // Note: this call is async; we return current settings immediately,
-      // but also arrange an async merge that writes back. Callers can refresh if needed.
-      window.api.getSettings().then((s) => {
-        if (!s || typeof s !== 'object') return;
-        const merged = {
-          ...settings,
-          apiBase: s.apiBase ?? settings.apiBase,
-          backendUrl: s.backendUrl ?? settings.backendUrl,
-          wsUrl: s.wsUrl ?? settings.wsUrl,
-          featureFlags: s.featureFlags ?? settings.featureFlags,
-          env: s.env ?? settings.env,
-          offlineMode: s.offlineMode ?? settings.offlineMode,
-          __mergedElectron: true,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-      }).catch(() => {});
+    if (typeof window !== 'undefined') {
+      if (window.api?.getSettings && !settings.__mergedElectron) {
+        // async merge
+        window.api.getSettings().then((s) => {
+          if (!s || typeof s !== 'object') return;
+          const merged = {
+            ...settings,
+            apiBase: s.apiBase ?? settings.apiBase,
+            backendUrl: s.backendUrl ?? settings.backendUrl,
+            wsUrl: s.wsUrl ?? settings.wsUrl,
+            featureFlags: s.featureFlags ?? settings.featureFlags,
+            env: s.env ?? settings.env,
+            offlineMode: s.offlineMode ?? settings.offlineMode,
+            __mergedElectron: true,
+          };
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } catch {}
+        }).catch(() => {});
+      }
+      // also try to read mode via api
+      if (window.api?.getMode) {
+        window.api.getMode().then((m) => {
+          if (!m || !m.mode) return;
+          const current = loadSettings();
+          const merged = { ...current, mode: m.mode, offlineMode: m.mode === 'offline' };
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } catch {}
+        }).catch(() => {});
+      }
     }
 
     return settings;
@@ -96,6 +112,7 @@ export function saveSettings(partial) {
     ...('featureFlags' in partial ? { featureFlags: partial.featureFlags } : {}),
     ...('env' in partial ? { env: partial.env } : {}),
     ...('offlineMode' in partial ? { offlineMode: !!partial.offlineMode } : {}),
+    ...('mode' in partial ? { mode: partial.mode } : {}),
   };
 
   // Coerce numeric values to valid ranges
@@ -120,6 +137,10 @@ export function saveSettings(partial) {
       env: next.env,
     };
     window.api.setSettings(minimal).catch(() => {});
+  }
+  // Propagate mode to Electron if supported
+  if (typeof window !== 'undefined' && 'mode' in partial && window.api?.setMode) {
+    window.api.setMode(next.mode).catch(() => {});
   }
   return next;
 }

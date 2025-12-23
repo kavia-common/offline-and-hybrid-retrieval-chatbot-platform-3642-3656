@@ -34,6 +34,9 @@ function App() {
       window.api.getSettings?.().then((s) => {
         if (s && typeof s.offlineMode === 'boolean') setOffline(s.offlineMode);
       }).catch(() => {});
+      window.api.getMode?.().then((m) => {
+        if (m && m.mode) setOffline(m.mode === 'offline');
+      }).catch(() => {});
       window.api.getAppInfo?.().then(setAppInfo).catch(() => {});
     }
     // subscribe to localStorage changes
@@ -47,6 +50,20 @@ function App() {
   };
 
   const toggleOfflineMode = async () => {
+    // Prefer setMode to explicitly choose next mode
+    if (window.api?.getMode && window.api?.setMode) {
+      try {
+        const m = await window.api.getMode();
+        const next = m?.mode === 'offline' ? 'hybrid' : 'offline';
+        const res = await window.api.setMode(next);
+        if (res && typeof res.mode === 'string') {
+          setOffline(res.mode === 'offline');
+        }
+        return;
+      } catch {
+        // fallback below
+      }
+    }
     if (window.api?.toggleOfflineMode) {
       try {
         const result = await window.api.toggleOfflineMode();

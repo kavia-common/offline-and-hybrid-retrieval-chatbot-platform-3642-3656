@@ -60,6 +60,25 @@ export default function DataSourcesModal({ open, onClose }) {
     onClose?.();
   };
 
+  const handlePick = async () => {
+    if (typeof window === 'undefined' || !window.api) return;
+    try {
+      if (newType === 'folder' && window.api.pickFolder) {
+        const res = await window.api.pickFolder();
+        if (!res?.canceled && Array.isArray(res.filePaths) && res.filePaths[0]) {
+          setNewPath(res.filePaths[0]);
+        }
+      } else if (newType === 'file' && window.api.pickFiles) {
+        const res = await window.api.pickFiles({ allowMultiple: false });
+        if (!res?.canceled && Array.isArray(res.filePaths) && res.filePaths[0]) {
+          setNewPath(res.filePaths[0]);
+        }
+      }
+    } catch {
+      // swallow; remains manual input
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -87,10 +106,15 @@ export default function DataSourcesModal({ open, onClose }) {
                 value={newPath}
                 onChange={(e) => setNewPath(e.target.value)}
               />
-              <button className="btn" onClick={handleAdd}>Add</button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn" onClick={handleAdd}>Add</button>
+                {typeof window !== 'undefined' && window.api && (
+                  <button className="btn ghost" onClick={handlePick} title="Pick from system dialog">Browse…</button>
+                )}
+              </div>
             </div>
             {errors.newPath && <div className="error">{errors.newPath}</div>}
-            <div className="muted mt-xs">IPC file pickers will be wired later.</div>
+            <div className="muted mt-xs">You can type a path manually or use the Browse button in Electron.</div>
           </div>
 
           <div className="form-row">
