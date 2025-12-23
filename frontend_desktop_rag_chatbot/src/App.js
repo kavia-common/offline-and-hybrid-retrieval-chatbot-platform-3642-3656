@@ -5,6 +5,10 @@ import { useTheme } from './theme';
 import TopBar from './components/layout/TopBar';
 import Sidebar from './components/layout/Sidebar';
 import MainChatPane from './components/layout/MainChatPane';
+import LLMSelectionModal from './components/modals/LLMSelectionModal';
+import RetrievalSettingsModal from './components/modals/RetrievalSettingsModal';
+import DataSourcesModal from './components/modals/DataSourcesModal';
+import { loadSettings, subscribeSettings } from './services/settingsService';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -16,6 +20,14 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSidebarTab, setActiveSidebarTab] = useState('sources'); // 'sources' | 'settings'
 
+  // modals
+  const [llmOpen, setLlmOpen] = useState(false);
+  const [retrievalOpen, setRetrievalOpen] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+
+  // reflect selected settings into status bar in chat
+  const [settingsSnapshot, setSettingsSnapshot] = useState(loadSettings());
+
   useEffect(() => {
     // If running under Electron, load settings/app info
     if (typeof window !== 'undefined' && window.api) {
@@ -24,6 +36,9 @@ function App() {
       }).catch(() => {});
       window.api.getAppInfo?.().then(setAppInfo).catch(() => {});
     }
+    // subscribe to localStorage changes
+    const unsub = subscribeSettings((s) => setSettingsSnapshot(s));
+    return () => unsub?.();
   }, []);
 
   // PUBLIC_INTERFACE
@@ -54,13 +69,27 @@ function App() {
         onToggleSidebar={toggleSidebar}
         offline={offline}
         onToggleOffline={toggleOfflineMode}
+        onOpenLLM={() => setLlmOpen(true)}
+        onOpenRetrieval={() => setRetrievalOpen(true)}
+        onOpenSources={() => setSourcesOpen(true)}
       />
       <Sidebar
         activeTab={activeSidebarTab}
         setActiveTab={setActiveSidebarTab}
         visible={sidebarOpen}
       />
-      <MainChatPane />
+      <MainChatPane
+        settingsSummary={{
+          provider: settingsSnapshot?.llm?.provider,
+          model: settingsSnapshot?.llm?.model,
+          topK: settingsSnapshot?.retrieval?.topK,
+          reranking: settingsSnapshot?.retrieval?.reranking,
+        }}
+      />
+
+      <LLMSelectionModal open={llmOpen} onClose={() => { setLlmOpen(false); setSettingsSnapshot(loadSettings()); }} />
+      <RetrievalSettingsModal open={retrievalOpen} onClose={() => { setRetrievalOpen(false); setSettingsSnapshot(loadSettings()); }} />
+      <DataSourcesModal open={sourcesOpen} onClose={() => { setSourcesOpen(false); setSettingsSnapshot(loadSettings()); }} />
     </div>
   );
 }

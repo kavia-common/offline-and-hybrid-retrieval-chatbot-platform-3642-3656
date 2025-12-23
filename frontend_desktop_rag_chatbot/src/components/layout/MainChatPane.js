@@ -5,10 +5,11 @@ import ChatStatusBar from '../chat/ChatStatusBar';
 import { sendUserMessage, streamAssistantReply } from '../../services/chatService';
 
 // PUBLIC_INTERFACE
-export default function MainChatPane() {
+export default function MainChatPane({ settingsSummary }) {
   /**
    * Main chat pane integrating message list, composer, and status bar.
    * Manages streaming mock state until IPC is wired.
+   * Displays current settings (LLM and retrieval) in header for quick visibility.
    */
   const [messages, setMessages] = useState(() => [
     {
@@ -39,18 +40,16 @@ export default function MainChatPane() {
 
     try {
       await sendUserMessage(text); // placeholder
-      const start = Date.now();
       await streamAssistantReply((chunk) => {
         setPendingAssistant((prev) => (prev || '') + chunk);
       });
-      const end = Date.now();
       // finalize assistant message
-      const finalText = (pendingAssistantRef.current || '') + ''; // ensure final read
+      const finalText = (pendingAssistantRef.current || '') + '';
       const finalMsg = {
         id: `a-${nextId()}`,
         role: 'assistant',
         text: finalText,
-        createdAt: end,
+        createdAt: Date.now(),
       };
       setMessages((prev) => [...prev, finalMsg]);
     } catch {
@@ -80,7 +79,20 @@ export default function MainChatPane() {
     <section className="main-chat-pane" aria-label="Main chat area">
       <div className="chat-header">
         <h2 className="m-0">Conversation</h2>
-        <p className="muted">Ask questions about your documents. Streaming is mocked for now.</p>
+        <p className="muted">
+          Ask questions about your documents. Streaming is mocked for now.
+          {settingsSummary?.provider && settingsSummary?.model && (
+            <>
+              {' '}• Model: <strong>{settingsSummary.provider}</strong> / <strong>{settingsSummary.model}</strong>
+            </>
+          )}
+          {typeof settingsSummary?.topK === 'number' && (
+            <> • Top-K: <strong>{settingsSummary.topK}</strong></>
+          )}
+          {typeof settingsSummary?.reranking === 'boolean' && (
+            <> • Rerank: <strong>{settingsSummary.reranking ? 'On' : 'Off'}</strong></>
+          )}
+        </p>
       </div>
 
       {showEmpty ? (

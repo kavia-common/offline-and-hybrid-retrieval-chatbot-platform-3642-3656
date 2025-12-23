@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../../theme';
 
 // PUBLIC_INTERFACE
-export default function TopBar({ onToggleTheme, currentTheme, onToggleSidebar, offline, onToggleOffline }) {
+export default function TopBar({ onToggleTheme, currentTheme, onToggleSidebar, offline, onToggleOffline, onOpenLLM, onOpenRetrieval, onOpenSources }) {
   /** TopBar with app title and quick actions; Ocean Professional styling */
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const handleOpen = (type) => {
+    setSettingsOpen(false);
+    if (type === 'llm') onOpenLLM?.();
+    if (type === 'retrieval') onOpenRetrieval?.();
+    if (type === 'sources') onOpenSources?.();
+  };
+
   return (
     <header className="topbar surface" aria-label="Application top bar">
       <div className="left">
@@ -23,6 +32,24 @@ export default function TopBar({ onToggleTheme, currentTheme, onToggleSidebar, o
       </div>
 
       <div className="actions">
+        <div className="settings-menu">
+          <button
+            className="icon-btn"
+            aria-label="Open settings menu"
+            onClick={() => setSettingsOpen((v) => !v)}
+            title="Settings"
+          >
+            ⚙️
+          </button>
+          {settingsOpen && (
+            <div className="menu surface" role="menu">
+              <button className="menu-item" role="menuitem" onClick={() => handleOpen('llm')}>LLM Selection</button>
+              <button className="menu-item" role="menuitem" onClick={() => handleOpen('retrieval')}>Retrieval Settings</button>
+              <button className="menu-item" role="menuitem" onClick={() => handleOpen('sources')}>Data Sources</button>
+            </div>
+          )}
+        </div>
+
         {typeof window !== 'undefined' && window.api && (
           <button className="btn ghost" onClick={onToggleOffline}>
             {offline ? 'Disable Offline' : 'Enable Offline'}
