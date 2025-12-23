@@ -39,7 +39,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header surface">
+      {/* Demo gradient top bar using theme gradient and primary/secondary */}
+      <div className="top-ribbon" role="presentation" />
+      <header className="App-header surface" aria-label="Demo header with themed actions">
         <div className="top-actions">
           <button
             className="theme-toggle"
@@ -63,6 +65,12 @@ function App() {
         <p>
           Current theme: <strong>{theme}</strong>
         </p>
+
+        {/* Accent buttons demo using primary and secondary from the theme */}
+        <div className="container" style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: 'var(--space-md)' }}>
+          <button className="btn">Primary Action</button>
+          <button className="btn secondary">Secondary Action</button>
+        </div>
 
         {typeof window !== 'undefined' && window.api ? (
           <>

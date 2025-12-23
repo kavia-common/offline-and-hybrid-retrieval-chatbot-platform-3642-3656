@@ -1,3 +1,4 @@
+/* Import global theme variables and base styles first */
 @import './styles/global.css';
 
 code {

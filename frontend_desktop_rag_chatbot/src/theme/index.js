@@ -16,6 +16,7 @@ export const tokens = {
     background: '#f9fafb',
     surface: '#ffffff',
     text: '#111827',
+    borderLight: 'rgba(17,24,39,0.10)',
     gradientStart: 'rgba(59,130,246,0.10)', // blue-500/10
     gradientEnd: '#f9fafb',                 // gray-50
   },
@@ -87,7 +88,7 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
     const background = isDark ? DARK_SCHEME.background : c.background;
     const surface = isDark ? DARK_SCHEME.surface : c.surface;
     const text = isDark ? DARK_SCHEME.text : c.text;
-    const border = isDark ? DARK_SCHEME.border : 'rgba(17,24,39,0.10)';
+    const border = isDark ? DARK_SCHEME.border : c.borderLight;
 
     root.style.setProperty('--color-primary', c.primary);
     root.style.setProperty('--color-secondary', c.secondary);
