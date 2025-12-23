@@ -1,83 +1,73 @@
-/* CSS Variables for Theme Management */
-:root {
-  /* Light theme colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --text-primary: #282c34;
-  --text-secondary: #61dafb;
-  --border-color: #e9ecef;
-  --button-bg: #007bff;
-  --button-text: #ffffff;
-}
-
-[data-theme="dark"] {
-  /* Dark theme colors */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #282c34;
-  --text-primary: #ffffff;
-  --text-secondary: #61dafb;
-  --border-color: #404040;
-  --button-bg: #0056b3;
-  --button-text: #ffffff;
-}
+/* App styles consuming Ocean Professional CSS variables */
 
 .App {
-  text-align: center;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  background: var(--color-background);
+  color: var(--color-text);
+  transition: background-color 220ms ease, color 220ms ease;
+}
+
+.App-header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  padding: var(--space-2xl);
+  background:
+    radial-gradient(900px 600px at 20% -200px, var(--gradient-start), transparent),
+    linear-gradient(180deg, rgba(255,255,255,0.50), rgba(255,255,255,0)),
+    var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .App-logo {
-  height: 40vmin;
+  height: 24vmin;
   pointer-events: none;
+  filter: drop-shadow(0 8px 24px rgba(37,99,235,0.25));
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+    animation: App-logo-spin infinite 22s linear;
   }
 }
 
-.App-header {
-  background-color: var(--bg-secondary);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease;
-  position: relative;
+.App-link {
+  color: var(--color-primary);
+  transition: color 180ms ease, opacity 180ms ease;
 }
 
-.App-link {
-  color: var(--text-secondary);
-  transition: color 0.3s ease;
+.top-actions {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  gap: var(--space-sm);
 }
 
 .theme-toggle {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background-color: var(--button-bg);
-  color: var(--button-text);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0)) , var(--color-primary);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: calc(var(--space-sm) + 2px) var(--space-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 150ms ease, box-shadow 200ms ease, opacity 180ms ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .theme-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  opacity: 0.9;
+  box-shadow: var(--shadow-md);
+  opacity: 0.95;
 }
 
 .theme-toggle:active {
@@ -85,20 +75,16 @@
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Responsive design for mobile */
 @media (max-width: 768px) {
-  .theme-toggle {
-    top: 10px;
-    right: 10px;
-    padding: 8px 16px;
-    font-size: 12px;
+  .top-actions {
+    top: var(--space-md);
+    right: var(--space-md);
+  }
+  .App-logo {
+    height: 30vmin;
   }
 }

@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { useTheme } from './theme';
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
+  const { theme, setTheme } = useTheme();
   const [offline, setOffline] = useState(null);
   const [appInfo, setAppInfo] = useState(null);
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     // If running under Electron, load settings/app info
@@ -25,7 +21,7 @@ function App() {
 
   // PUBLIC_INTERFACE
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
   const toggleOfflineMode = async () => {
@@ -43,16 +39,25 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
+      <header className="App-header surface">
+        <div className="top-actions">
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+          </button>
+          {typeof window !== 'undefined' && window.api && (
+            <button className="btn ghost" onClick={toggleOfflineMode}>
+              {offline ? 'Disable Offline' : 'Enable Offline'}
+            </button>
+          )}
+        </div>
+
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
+        <h1>Ocean Professional</h1>
+        <p className="container">
           Edit <code>src/App.js</code> and save to reload.
         </p>
         <p>
@@ -62,14 +67,13 @@ function App() {
         {typeof window !== 'undefined' && window.api ? (
           <>
             <p>
-              Offline mode: <strong>{offline === null ? 'unknown' : (offline ? 'enabled' : 'disabled')}</strong>
+              Offline mode:{' '}
+              <strong>{offline === null ? 'unknown' : offline ? 'enabled' : 'disabled'}</strong>
             </p>
-            <button className="theme-toggle" onClick={toggleOfflineMode}>
-              Toggle Offline
-            </button>
             {appInfo && (
               <p className="App-link" style={{ marginTop: 12 }}>
-                Electron {appInfo.version} • {appInfo.isDev ? 'Development' : 'Production'} • {appInfo.platform}
+                Electron {appInfo.version} • {appInfo.isDev ? 'Development' : 'Production'} •{' '}
+                {appInfo.platform}
               </p>
             )}
           </>
