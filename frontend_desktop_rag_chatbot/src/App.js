@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import './styles/layout.css';
 import { useTheme } from './theme';
+import TopBar from './components/layout/TopBar';
+import Sidebar from './components/layout/Sidebar';
+import MainChatPane from './components/layout/MainChatPane';
 
 // PUBLIC_INTERFACE
 function App() {
   const { theme, setTheme } = useTheme();
   const [offline, setOffline] = useState(null);
   const [appInfo, setAppInfo] = useState(null);
+
+  // local UI state
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeSidebarTab, setActiveSidebarTab] = useState('sources'); // 'sources' | 'settings'
 
   useEffect(() => {
     // If running under Electron, load settings/app info
@@ -37,65 +44,23 @@ function App() {
     }
   };
 
+  const toggleSidebar = () => setSidebarOpen((v) => !v);
+
   return (
-    <div className="App">
-      {/* Demo gradient top bar using theme gradient and primary/secondary */}
-      <div className="top-ribbon" role="presentation" />
-      <header className="App-header surface" aria-label="Demo header with themed actions">
-        <div className="top-actions">
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-          </button>
-          {typeof window !== 'undefined' && window.api && (
-            <button className="btn ghost" onClick={toggleOfflineMode}>
-              {offline ? 'Disable Offline' : 'Enable Offline'}
-            </button>
-          )}
-        </div>
-
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>Ocean Professional</h1>
-        <p className="container">
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-
-        {/* Accent buttons demo using primary and secondary from the theme */}
-        <div className="container" style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: 'var(--space-md)' }}>
-          <button className="btn">Primary Action</button>
-          <button className="btn secondary">Secondary Action</button>
-        </div>
-
-        {typeof window !== 'undefined' && window.api ? (
-          <>
-            <p>
-              Offline mode:{' '}
-              <strong>{offline === null ? 'unknown' : offline ? 'enabled' : 'disabled'}</strong>
-            </p>
-            {appInfo && (
-              <p className="App-link" style={{ marginTop: 12 }}>
-                Electron {appInfo.version} • {appInfo.isDev ? 'Development' : 'Production'} •{' '}
-                {appInfo.platform}
-              </p>
-            )}
-          </>
-        ) : (
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        )}
-      </header>
+    <div className="app-shell">
+      <TopBar
+        onToggleTheme={toggleTheme}
+        currentTheme={theme}
+        onToggleSidebar={toggleSidebar}
+        offline={offline}
+        onToggleOffline={toggleOfflineMode}
+      />
+      <Sidebar
+        activeTab={activeSidebarTab}
+        setActiveTab={setActiveSidebarTab}
+        visible={sidebarOpen}
+      />
+      <MainChatPane />
     </div>
   );
 }
