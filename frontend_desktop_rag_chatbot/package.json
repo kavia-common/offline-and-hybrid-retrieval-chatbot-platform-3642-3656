@@ -2,16 +2,21 @@
   "name": "react-kavia",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start:web": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+
+    "start": "concurrently -k -r \"npm:start:web\" \"npm:electron-dev\"",
+    "electron-dev": "wait-on tcp:3000 && cross-env BROWSER=none ELECTRON_START_URL=http://localhost:3000 electron .",
+    "start:prod-electron": "cross-env BROWSER=none electron ."
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -29,6 +34,10 @@
     ]
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^30.0.9",
+    "electron-is-dev": "^3.3.0",
+    "wait-on": "^7.2.0"
   }
 }
