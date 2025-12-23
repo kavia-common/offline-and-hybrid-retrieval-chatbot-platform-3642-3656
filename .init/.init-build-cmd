@@ -1,0 +1,4 @@
+{
+    "command": "npm install && npx tsc --noEmit && npm test -- --ci",
+    "working_directory": "/home/kavia/workspace/code-generation/offline-and-hybrid-retrieval-chatbot-platform-3642-3656/frontend_desktop_rag_chatbot"
+}
