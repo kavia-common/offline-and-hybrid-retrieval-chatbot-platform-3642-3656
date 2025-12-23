@@ -43,8 +43,8 @@ export default function MainChatPane({ settingsSummary }) {
       await streamAssistantReply((chunk) => {
         setPendingAssistant((prev) => (prev || '') + chunk);
       });
-      // finalize assistant message
-      const finalText = (pendingAssistantRef.current || '') + '';
+      // finalize assistant message using latest ref to avoid stale closure
+      const finalText = pendingAssistantRef.current || '';
       const finalMsg = {
         id: `a-${nextId()}`,
         role: 'assistant',
